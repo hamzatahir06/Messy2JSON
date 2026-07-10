@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "messy2json"
+version = "0.1.0"
+description = "Turns messy text (emails, notes, voice-to-text) into structured JSON using Groq LLM."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "groq>=1.5.0",
+    "rich>=13.7.0",
+    "pyperclip>=1.8.2",
+    "python-dotenv>=1.0.0"
+]
+
+[project.scripts]
+messy2json = "messy2json.main:main"
+
+[tool.setuptools]
+packages = ["messy2json"]
