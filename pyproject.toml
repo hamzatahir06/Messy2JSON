@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "messy2json"
-version = "0.1.0"
+version = "0.1.1"
 description = "Turns messy text (emails, notes, voice-to-text) into structured JSON using Groq LLM."
 readme = "README.md"
 requires-python = ">=3.12"
