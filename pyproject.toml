@@ -20,3 +20,8 @@ messy2json = "messy2json.main:main"
 
 [tool.setuptools]
 packages = ["messy2json"]
+
+[project.urls]
+Homepage = "https://github.com/hamzatahir06/Messy2JSON"
+Repository = "https://github.com/hamzatahir06/Messy2JSON"
+"Bug Tracker" = "https://github.com/hamzatahir06/Messy2JSON/issues"

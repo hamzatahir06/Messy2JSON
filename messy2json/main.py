@@ -247,8 +247,9 @@ def show_banner(model: str):
             "[bold]messy2json[/bold]\n"
             "Paste any messy text — email, meeting notes, voice-to-text — "
             "and get back structured JSON.\n\n"
-            f"[dim]Model :[/dim] [yellow]{model}[/yellow]\n"
-            "[dim]Output :[/dim] [cyan]summary[/cyan]  [cyan]action_items[/cyan]  [cyan]deadline[/cyan]",
+            f"[dim]Model  :[/dim] [yellow]{model}[/yellow]\n"
+            "[dim]Output :[/dim] [cyan]summary[/cyan]  [cyan]action_items[/cyan]  [cyan]deadline[/cyan]\n"
+            "[dim]GitHub :[/dim] [bold link=https://github.com/hamzatahir06/Messy2JSON]https://github.com/hamzatahir06/Messy2JSON[/bold link]",
             title="[bold green]🤖 Agent Ready[/bold green]",
             border_style="green",
             expand=False,
@@ -256,10 +257,9 @@ def show_banner(model: str):
     )
     console.print(
         "  [dim]HOW TO USE[/dim]\n"
-        "  • After pasting text, Type [bold cyan]/do[/bold cyan] on a new line and press Enter to extract JSON\n"
+        "  • Type [bold cyan]/do[/bold cyan] on a new line and press Enter to extract JSON\n"
         "  • Press [bold red]Ctrl+C[/bold red] at any time to exit\n"
     )
-
 
 def _read_one_input() -> str:
     console.print("[dim]─────────────────────────────────────[/dim]")
