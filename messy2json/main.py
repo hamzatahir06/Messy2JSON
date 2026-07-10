@@ -320,6 +320,7 @@ def main():
         prog="messy2json",
         description="Turn messy text into strict JSON.",
     )
+    parser.add_argument("--version", action="version", version="%(prog)s 0.1.0")
     parser.add_argument("-f", "--file",   help="read from a file instead of interactive mode")
     parser.add_argument("-o", "--output", help="also save the JSON result to this file")
     parser.add_argument("--model",        help=f"override Groq model (default: {DEFAULT_MODEL})")
