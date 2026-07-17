@@ -45,7 +45,8 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 
 DEFAULT_MODEL = "llama-3.3-70b-versatile"
 MAX_ATTEMPTS  = 3
-REQUIRED_KEYS = {"summary", "action_items", "deadline"}
+REQUIRED_KEYS = ("summary", "action_items", "deadline")  # canonical output order
+_REQUIRED_KEYS_SET = set(REQUIRED_KEYS)                  # for O(1) membership checks
 
 SYSTEM_PROMPT = """You are a strict information-extraction engine.
 
@@ -75,16 +76,24 @@ Rules:
 
 # ── config manager ────────────────────────────────────────────────────────────
 
+_config_cache: dict | None = None
+
+
 def _load_config() -> dict:
-    try:
-        return json.loads(CONFIG_FILE.read_text())
-    except Exception:
-        return {}
+    global _config_cache
+    if _config_cache is None:
+        try:
+            _config_cache = json.loads(CONFIG_FILE.read_text())
+        except Exception:
+            _config_cache = {}
+    return _config_cache
 
 
 def _save_config(data: dict):
+    global _config_cache
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     CONFIG_FILE.write_text(json.dumps(data, indent=2))
+    _config_cache = data
 
 
 def _first_time_setup() -> str:
@@ -156,6 +165,12 @@ def get_model() -> str:
 
 # ── core extraction ───────────────────────────────────────────────────────────
 
+def _append_retry(messages: list, content: str, note: str) -> None:
+    """Record the bad reply and the correction request, in place."""
+    messages.append({"role": "assistant", "content": content})
+    messages.append({"role": "user", "content": note})
+
+
 def _safe_fallback(reason: str) -> dict:
     return {
         "summary": f"Could not process input: {reason}",
@@ -167,7 +182,7 @@ def _safe_fallback(reason: str) -> dict:
 def _validate(data) -> tuple[bool, str]:
     if not isinstance(data, dict):
         return False, "top-level JSON is not an object"
-    missing = REQUIRED_KEYS - data.keys()
+    missing = _REQUIRED_KEYS_SET - data.keys()
     if missing:
         return False, f"missing keys: {sorted(missing)}"
     if not isinstance(data["summary"], str):
@@ -206,14 +221,10 @@ def extract_json(raw_text: str, client: Groq, model: str) -> dict:
                 data = json.loads(content)
             except json.JSONDecodeError as e:
                 last_error = f"invalid JSON syntax ({e})"
-                messages.append({"role": "assistant", "content": content})
-                messages.append({
-                    "role": "user",
-                    "content": (
-                        f"That was not valid JSON ({e}). Reply again with ONLY the "
-                        "corrected JSON object, no other text."
-                    ),
-                })
+                _append_retry(messages, content, (
+                    f"That was not valid JSON ({e}). Reply again with ONLY the "
+                    "corrected JSON object, no other text."
+                ))
                 continue
 
             ok, err = _validate(data)
@@ -221,14 +232,10 @@ def extract_json(raw_text: str, client: Groq, model: str) -> dict:
                 return {k: data[k] for k in REQUIRED_KEYS}
 
             last_error = f"schema mismatch ({err})"
-            messages.append({"role": "assistant", "content": content})
-            messages.append({
-                "role": "user",
-                "content": (
-                    f"That JSON didn't match the required schema ({err}). Reply again "
-                    "with ONLY the corrected JSON object, no other text."
-                ),
-            })
+            _append_retry(messages, content, (
+                f"That JSON didn't match the required schema ({err}). Reply again "
+                "with ONLY the corrected JSON object, no other text."
+            ))
 
         except Exception as e:
             last_error = str(e)
